@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Reporte de Fallas Reportadas</title>
+</head>
+<body>
+    <h1>Reporte de Fallas Reportadas</h1>
+
+    <form th:action="@{/reportes/fallas}" method="post">
+        Fecha Inicio: <input type="date" name="fechaInicio">
+        Fecha Fin: <input type="date" name="fechaFin">
+        Prioridad: <input type="text" name="prioridad">
+        Estado: <input type="text" name="estado">
+        Departamento ID: <input type="number" name="departamentoId">
+        <button type="submit">Filtrar</button>
+    </form>
+
+    <table border="1" th:if="${fallas != null}">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Descripción</th>
+                <th>Fecha Reporte</th>
+                <th>Prioridad</th>
+                <th>Estado</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr th:each="falla : ${fallas}">
+                <td th:text="${falla.id}">1</td>
+                <td th:text="${falla.descripcion}">Descripción</td>
+                <td th:text="${falla.fechaReporte}">2025-05-01</td>
+                <td th:text="${falla.prioridad}">Alta</td>
+                <td th:text="${falla.estado}">Pendiente</td>
+            </tr>
+        </tbody>
+    </table>
+</body>
+</html>
