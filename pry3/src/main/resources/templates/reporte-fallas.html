@@ -78,30 +78,111 @@
 
     <form th:action="@{/reportes/fallas}" method="post">
         <label>Fecha Inicio:</label>
-        <input type="date" name="fechaInicio"/>
+        <input type="date" name="fechaInicio" th:value="${fechaInicio}"/>
 
         <label>Fecha Fin:</label>
-        <input type="date" name="fechaFin"/>
+        <input type="date" name="fechaFin" th:value="${fechaFin}"/>
 
         Prioridad:
-        <select name="prioridad" th:value="${prioridad}">
-            <option value="">-- Todas --</option>
-            <option value="Alta">Alta</option>
-            <option value="Media">Media</option>
-            <option value="Baja">Baja</option>
+        <select name="prioridad">
+            <option value="" th:selected="${prioridad == null or prioridad == ''}">-- Todas --</option>
+            <option value="Alta" th:selected="${prioridad == 'Alta'}">Alta</option>
+            <option value="Media" th:selected="${prioridad == 'Media'}">Media</option>
+            <option value="Baja" th:selected="${prioridad == 'Baja'}">Baja</option>
         </select>
+        
     
         Estado:
-        <select name="estado" th:value="${estado}">
-            <option value="">-- Todos --</option>
-            <option value="Pendiente">Pendiente</option>
-            <option value="En Proceso">En Proceso</option>
-            <option value="Resuelta">Resuelta</option>
+        <select name="estado">
+            <option value="" th:selected="${estado == null or estado == ''}">-- Todos --</option>
+            <option value="Pendiente" th:selected="${estado == 'Pendiente'}">Pendiente</option>
+            <option value="En Proceso" th:selected="${estado == 'En Proceso'}">En Proceso</option>
+            <option value="Resuelta" th:selected="${estado == 'Resuelta'}">Resuelta</option>
         </select>
     
         <button type="submit">Filtrar</button>
     </form>
     
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const form = document.querySelector('form');
+            const exportLink = document.querySelector('#export-csv-link');
+    
+            function updateExportLink() {
+                const formData = new FormData(form);
+                const params = new URLSearchParams();
+    
+                for (const [key, value] of formData.entries()) {
+                    if (value && value.trim() !== '') {
+                        params.append(key, value);
+                    }
+                }
+    
+                exportLink.href = `/reportes/fallas/export/csv?${params.toString()}`;
+            }
+            form.addEventListener('change', updateExportLink);
+
+            // Actualizar el enlace cada vez que se cambia el formulario
+            //form.addEventListener('input', updateExportLink);
+            //form.addEventListener('submit', updateExportLink);
+    
+            // Llamar al cargar la página por si hay valores precargados
+            updateExportLink();
+        });
+    </script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const form = document.querySelector('form');
+        const exportLink = document.querySelector('#export-excel-link');
+    
+        function updateExportLink() {
+            const formData = new FormData(form);
+            const params = new URLSearchParams();
+    
+            for (const [key, value] of formData.entries()) {
+                if (value && value.trim() !== '') {
+                    params.append(key, value);
+                }
+            }
+    
+            exportLink.href = `/reportes/fallas/export/excel?${params.toString()}`;
+        }
+    
+        // Escuchar cambios y entradas para actualizar el link
+        form.addEventListener('change', updateExportLink);
+        form.addEventListener('input', updateExportLink);
+    
+        // Actualizar al cargar por si hay filtros preseleccionados
+        updateExportLink();
+    });
+    </script>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const form = document.querySelector('form');
+            const pdfLink = document.querySelector('#export-pdf-link');
+        
+            function updatePdfLink() {
+                const formData = new FormData(form);
+                const params = new URLSearchParams();
+        
+                for (const [key, value] of formData.entries()) {
+                    if (value && value.trim() !== '') {
+                        params.append(key, value);
+                    }
+                }
+        
+                pdfLink.href = `/reportes/fallas/export/pdf?${params.toString()}`;
+            }
+        
+            form.addEventListener('change', updatePdfLink);
+            form.addEventListener('input', updatePdfLink);
+            updatePdfLink();
+        });
+        </script>
+        
+
     <!-- Mostrar mensaje si no hay resultados -->
     <p th:if="${fallas != null and #lists.isEmpty(fallas)}" style="text-align:center; font-weight: bold; color: #d35400;">
         No se encontraron fallas con los filtros seleccionados.
@@ -161,9 +242,9 @@
 </style>
 
 <div class="export-buttons">
-    <a href="/reportes/fallas/export/csv">Exportar a CSV</a>
-    <a href="/reportes/fallas/export/excel">Exportar a Excel</a>
-    <a href="/reportes/fallas/export/pdf">Exportar a PDF</a>
+    <a id="export-csv-link" href="#">Exportar a CSV</a>
+    <a id="export-excel-link" href="#">Exportar a Excel</a>
+    <a id="export-pdf-link" href="#" class="btn btn-danger">Exportar PDF</a>
 </div>
 
 </body>

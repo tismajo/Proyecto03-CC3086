@@ -42,11 +42,17 @@ public String filtrarFallas(
 
     model.addAttribute("fallas", fallas);
 
-    // Agrupar por prioridad
+    // Agrega nuevamente los filtros al modelo para que se mantengan en el HTML
+    model.addAttribute("fechaInicio", fechaInicio);
+    model.addAttribute("fechaFin", fechaFin);
+    model.addAttribute("prioridad", prioridad);
+    model.addAttribute("estado", estado);
+    model.addAttribute("departamentoId", departamentoId);
+
+    // Conteo para gráfico
     Map<String, Long> conteo = fallas.stream()
         .collect(Collectors.groupingBy(FallaReportadaModel::getPrioridad, Collectors.counting()));
 
-    // Asegurar que estén en orden: Alta, Media, Baja
     List<Long> conteoPrioridades = List.of(
         conteo.getOrDefault("Alta", 0L),
         conteo.getOrDefault("Media", 0L),
@@ -57,4 +63,5 @@ public String filtrarFallas(
 
     return "reporte-fallas";
 }
+
 }

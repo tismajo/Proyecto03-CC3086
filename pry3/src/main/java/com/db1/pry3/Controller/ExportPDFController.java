@@ -8,27 +8,40 @@ import com.itextpdf.text.Paragraph;
 import com.itextpdf.text.pdf.PdfWriter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.InputStreamResource;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.time.LocalDate;
 import java.util.List;
 
 @RestController
-public class exportPDF{
+public class ExportPDFController {
 
     @Autowired
-    private FallaReportadaRepository fallaReportadaRepository;
+    private FallaReportadaRepository fallaRepo;
 
     @GetMapping("/reportes/fallas/export/pdf")
-    public ResponseEntity<InputStreamResource> exportPDF1() throws IOException, DocumentException {
-        List<FallaReportadaModel> fallas = fallaReportadaRepository.findAll();
+    public ResponseEntity<InputStreamResource> exportPDF(
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fechaInicio,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fechaFin,
+            @RequestParam(required = false) String prioridad,
+            @RequestParam(required = false) String estado,
+            @RequestParam(required = false) Long departamentoId
+    ) throws IOException, DocumentException {
 
-        // Crear documento PDF
+        if (prioridad != null && prioridad.trim().isEmpty()) prioridad = null;
+        if (estado != null && estado.trim().isEmpty()) estado = null;
+
+        List<FallaReportadaModel> fallas = fallaRepo.findFallasByFilters(
+                fechaInicio, fechaFin, prioridad, estado, departamentoId
+        );
+
         Document document = new Document();
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         PdfWriter.getInstance(document, out);
@@ -37,7 +50,6 @@ public class exportPDF{
         document.add(new Paragraph("Reporte de Fallas Reportadas"));
         document.add(new Paragraph("\n"));
 
-        // Contenido del PDF
         for (FallaReportadaModel falla : fallas) {
             document.add(new Paragraph("ID: " + falla.getId()));
             document.add(new Paragraph("Descripción: " + falla.getDescripcion()));
@@ -50,7 +62,6 @@ public class exportPDF{
 
         document.close();
 
-        // Configurar descarga
         ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(out.toByteArray());
         HttpHeaders headers = new HttpHeaders();
         headers.add("Content-Disposition", "attachment; filename=falla_reportada.pdf");
