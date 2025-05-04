@@ -2,23 +2,116 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <title>Reporte de Fallas Reportadas</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            color: #333;
+            padding: 20px;
+        }
+
+        h1 {
+            color: #e67e22;
+            text-align: center;
+        }
+
+        form {
+            background-color: #fff;
+            padding: 15px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        form input[type="date"],
+        form select,
+        form button {
+            padding: 8px;
+            margin: 8px 5px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+        }
+
+        form button {
+            background-color: #e67e22;
+            color: #fff;
+            border: none;
+            cursor: pointer;
+        }
+
+        form button:hover {
+            background-color: #d35400;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background-color: #fff;
+            margin-top: 20px;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ccc;
+        }
+
+        th {
+            background-color: #e67e22;
+            color: white;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+
+        tr:hover {
+            background-color: #ddd;
+        }
+    </style>
 </head>
 <body>
     <h1>Reporte de Fallas Reportadas</h1>
 
     <form th:action="@{/reportes/fallas}" method="post">
-        Fecha Inicio: <input type="date" name="fechaInicio">
-        Fecha Fin: <input type="date" name="fechaFin">
-        Prioridad: <input type="text" name="prioridad">
-        Estado: <input type="text" name="estado">
-        Departamento ID: <input type="number" name="departamentoId">
+        Fecha Inicio:
+        <input type="date" name="fechaInicio" th:value="${fechaInicio}">
+    
+        Fecha Fin:
+        <input type="date" name="fechaFin" th:value="${fechaFin}">
+    
+        Prioridad:
+        <select name="prioridad" th:value="${prioridad}">
+            <option value="">-- Todas --</option>
+            <option value="Alta">Alta</option>
+            <option value="Media">Media</option>
+            <option value="Baja">Baja</option>
+        </select>
+    
+        Estado:
+        <select name="estado" th:value="${estado}">
+            <option value="">-- Todos --</option>
+            <option value="Pendiente">Pendiente</option>
+            <option value="En Proceso">En Proceso</option>
+            <option value="Resuelta">Resuelta</option>
+        </select>
+    
         <button type="submit">Filtrar</button>
     </form>
+    
+    <!-- Mostrar mensaje si no hay resultados -->
+    <p th:if="${fallas != null and #lists.isEmpty(fallas)}" style="text-align:center; font-weight: bold; color: #d35400;">
+        No se encontraron fallas con los filtros seleccionados.
+    </p>
+    
 
-    <table border="1" th:if="${fallas != null}">
+    <table th:if="${fallas != null}">
         <thead>
             <tr>
                 <th>ID</th>
+                <th>Máquina</th>
                 <th>Descripción</th>
                 <th>Fecha Reporte</th>
                 <th>Prioridad</th>
@@ -28,6 +121,7 @@
         <tbody>
             <tr th:each="falla : ${fallas}">
                 <td th:text="${falla.id}">1</td>
+                <td th:text="${falla.maquinaria.nombre}">Torno 1</td>
                 <td th:text="${falla.descripcion}">Descripción</td>
                 <td th:text="${falla.fechaReporte}">2025-05-01</td>
                 <td th:text="${falla.prioridad}">Alta</td>
