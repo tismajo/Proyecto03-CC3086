@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <title>Reporte de Fallas Reportadas</title>
     <style>
         body {
@@ -76,12 +77,12 @@
     <h1>Reporte de Fallas Reportadas</h1>
 
     <form th:action="@{/reportes/fallas}" method="post">
-        Fecha Inicio:
-        <input type="date" name="fechaInicio" th:value="${fechaInicio}">
-    
-        Fecha Fin:
-        <input type="date" name="fechaFin" th:value="${fechaFin}">
-    
+        <label>Fecha Inicio:</label>
+        <input type="date" name="fechaInicio"/>
+
+        <label>Fecha Fin:</label>
+        <input type="date" name="fechaFin"/>
+
         Prioridad:
         <select name="prioridad" th:value="${prioridad}">
             <option value="">-- Todas --</option>
@@ -129,7 +130,7 @@
             </tr>
         </tbody>
     </table>
-
+    <canvas id="graficoPrioridades" width="400" height="200" style="margin: 40px auto; display: block;"></canvas>
     <style>
     .export-buttons {
         display: flex;
@@ -166,4 +167,31 @@
 </div>
 
 </body>
+<script th:inline="javascript">
+    const data = {
+        labels: ['Alta', 'Media', 'Baja'],
+        datasets: [{
+            label: 'Cantidad de Fallas por Prioridad',
+            data: [[${conteoPrioridades}]],
+            backgroundColor: ['#e74c3c', '#f39c12', '#2ecc71']
+        }]
+    };
+
+    const config = {
+        type: 'bar',
+        data: data,
+        options: {
+            responsive: true,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: { stepSize: 1 }
+                }
+            }
+        }
+    };
+
+    new Chart(document.getElementById('graficoPrioridades'), config);
+</script>
+
 </html>

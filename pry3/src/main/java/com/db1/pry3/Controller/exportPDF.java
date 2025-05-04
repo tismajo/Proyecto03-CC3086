@@ -25,7 +25,7 @@ public class exportPDF{
     private FallaReportadaRepository fallaReportadaRepository;
 
     @GetMapping("/reportes/fallas/export/pdf")
-    public ResponseEntity<InputStreamResource> exportPDF() throws IOException, DocumentException {
+    public ResponseEntity<InputStreamResource> exportPDF1() throws IOException, DocumentException {
         List<FallaReportadaModel> fallas = fallaReportadaRepository.findAll();
 
         // Crear documento PDF

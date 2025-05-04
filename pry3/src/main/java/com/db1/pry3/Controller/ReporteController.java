@@ -2,7 +2,8 @@ package com.db1.pry3.Controller;
 
 import com.db1.pry3.Model.*;
 import com.db1.pry3.Repository.*;
-
+import java.util.Map;
+import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.stereotype.Controller;
@@ -25,28 +26,35 @@ public class ReporteController {
     }
 
     @PostMapping("/fallas")
-    public String filtrarFallas(
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fechaInicio,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fechaFin,
-            @RequestParam(required = false) String prioridad,
-            @RequestParam(required = false) String estado,
-            @RequestParam(required = false) Long departamentoId,
-            Model model) {
+public String filtrarFallas(
+        @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fechaInicio,
+        @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fechaFin,
+        @RequestParam(required = false) String prioridad,
+        @RequestParam(required = false) String estado,
+        @RequestParam(required = false) Long departamentoId,
+        Model model) {
 
-    // Limpieza de parámetros: convertir cadenas vacías a null
-    if (prioridad != null && prioridad.trim().isEmpty()) {
-        prioridad = null;
-    }
+    if (prioridad != null && prioridad.trim().isEmpty()) prioridad = null;
+    if (estado != null && estado.trim().isEmpty()) estado = null;
 
-    if (estado != null && estado.trim().isEmpty()) {
-        estado = null;
-    }
-
-    // Aquí se llama al repositorio con los parámetros limpios
     List<FallaReportadaModel> fallas = fallaRepo.findFallasByFilters(
             fechaInicio, fechaFin, prioridad, estado, departamentoId);
 
     model.addAttribute("fallas", fallas);
+
+    // Agrupar por prioridad
+    Map<String, Long> conteo = fallas.stream()
+        .collect(Collectors.groupingBy(FallaReportadaModel::getPrioridad, Collectors.counting()));
+
+    // Asegurar que estén en orden: Alta, Media, Baja
+    List<Long> conteoPrioridades = List.of(
+        conteo.getOrDefault("Alta", 0L),
+        conteo.getOrDefault("Media", 0L),
+        conteo.getOrDefault("Baja", 0L)
+    );
+
+    model.addAttribute("conteoPrioridades", conteoPrioridades);
+
     return "reporte-fallas";
-    }
+}
 }
