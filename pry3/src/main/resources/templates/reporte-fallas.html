@@ -129,5 +129,41 @@
             </tr>
         </tbody>
     </table>
+
+    <style>
+    .export-buttons {
+        display: flex;
+        justify-content: space-evenly;
+        gap: 10px;
+        margin-top: 20px;
+    }
+
+    .export-buttons a {
+        text-decoration: none;
+        color: white;
+        font-weight: bold;
+        padding: 10px 20px;
+        border-radius: 5px;
+        border: 1px solid #e67e22;
+        background-color: #e67e22;
+        transition: background-color 0.3s ease, transform 0.2s ease;
+    }
+
+    .export-buttons a:hover {
+        background-color: #d35400;
+        transform: scale(1.05);
+    }
+
+    .export-buttons a:active {
+        background-color: #c0392b;
+    }
+</style>
+
+<div class="export-buttons">
+    <a href="/reportes/fallas/export/csv">Exportar a CSV</a>
+    <a href="/reportes/fallas/export/excel">Exportar a Excel</a>
+    <a href="/reportes/fallas/export/pdf">Exportar a PDF</a>
+</div>
+
 </body>
 </html>
