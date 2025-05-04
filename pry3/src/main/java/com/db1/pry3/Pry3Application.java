@@ -5,9 +5,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
 public class Pry3Application {
-
 	public static void main(String[] args) {
 		SpringApplication.run(Pry3Application.class, args);
 	}
-
 }

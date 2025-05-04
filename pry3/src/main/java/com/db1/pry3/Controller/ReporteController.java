@@ -33,8 +33,20 @@ public class ReporteController {
             @RequestParam(required = false) Long departamentoId,
             Model model) {
 
-        List<FallaReportadaModel> fallas = fallaRepo.findFallasByFilters(fechaInicio, fechaFin, prioridad, estado, departamentoId);
-        model.addAttribute("fallas", fallas);
-        return "reporte-fallas";
+    // Limpieza de parámetros: convertir cadenas vacías a null
+    if (prioridad != null && prioridad.trim().isEmpty()) {
+        prioridad = null;
+    }
+
+    if (estado != null && estado.trim().isEmpty()) {
+        estado = null;
+    }
+
+    // Aquí se llama al repositorio con los parámetros limpios
+    List<FallaReportadaModel> fallas = fallaRepo.findFallasByFilters(
+            fechaInicio, fechaFin, prioridad, estado, departamentoId);
+
+    model.addAttribute("fallas", fallas);
+    return "reporte-fallas";
     }
 }
