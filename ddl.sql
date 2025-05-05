@@ -749,3 +749,16 @@ INSERT INTO mantenimiento (maquinaria_id, tecnico_id, tipo_mantenimiento_id, fec
 (99, 9, 9, '2025-05-02', 1, 43.00, 'Ajuste de convergencia.'),
 (100, 10, 10, '2025-05-01', 3, 220.50, 'Diagnóstico de problema de encendido.')
 ;
+
+INSERT INTO falla_reportada (maquinaria_id, descripcion, fecha_reporte, prioridad, estado)
+VALUES 
+    (1, 'Algo 1 Alto', '2025-04-20', 'Alta', 'Pendiente'),
+	(2, 'Algo 1 Medio', '2025-04-20', 'Media', 'En proceso'),
+	(3, 'Algo 1 Bajo', '2025-04-20', 'Baja', 'Resuelta'),
+	(4, 'Algo 2 Alto', '2025-04-20', 'Alta', 'Pendiente'),
+	(5, 'Algo 2 Medio', '2025-04-20', 'Media', 'En proceso'),
+	(6, 'Algo 2 Bajo', '2025-04-20', 'Baja', 'Resuelta'),
+	(7, 'Algo 3 Alto', '2025-04-20', 'Alta', 'Pendiente'),
+	(8, 'Algo 3 Medio', '2025-04-20', 'Media', 'Pendiente'),
+	(9, 'Algo 3 Bajo', '2025-04-20', 'Baja', 'Pendiente'),
+	(10, 'Algo 1', '2025-04-20', 'Alta', 'Pendiente');
