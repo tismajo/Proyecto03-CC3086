@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Reporte de Técnicos</title>
+    <style>
+        body { font-family: Arial; background-color: #f4f4f4; padding: 20px; }
+        h1 { color: #3498db; text-align: center; }
+        form, table { background-color: white; padding: 20px; border-radius: 10px; margin: 0 auto; max-width: 800px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { padding: 10px; border-bottom: 1px solid #ddd; }
+        th { background-color: #3498db; color: white; }
+        form input, form button { padding: 8px; margin: 5px; border: 1px solid #ccc; border-radius: 5px; }
+        form button { background-color: #3498db; color: white; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <h1>Reporte de Técnicos</h1>
+
+    <form th:action="@{/reportes/tecnicos/filtrar}" method="get">
+        <input type="text" name="nombre" placeholder="Nombre" th:value="${nombre}" />
+        <input type="text" name="especialidad" placeholder="Especialidad" th:value="${especialidad}" />
+        <input type="text" name="correo" placeholder="Correo" th:value="${correo}" />
+        <input type="text" name="telefono" placeholder="Telefono" th:value="${telefono}" />
+        <button type="submit">Filtrar</button>
+    </form>
+
+    <p th:if="${tecnicos != null and #lists.isEmpty(tecnicos)}" style="text-align:center; color: #e74c3c; font-weight: bold;">
+        No se encontraron técnicos con los filtros proporcionados.
+    </p>
+
+    <table th:if="${tecnicos != null}">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Nombre</th>
+                <th>Especialidad</th>
+                <th>Teléfono</th>
+                <th>Correo</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr th:each="tecnico : ${tecnicos}">
+                <td th:text="${tecnico.id}">1</td>
+                <td th:text="${tecnico.nombre}">Juan Pérez</td>
+                <td th:text="${tecnico.especialidad}">Eléctrico</td>
+                <td th:text="${tecnico.telefono}">5551234</td>
+                <td th:text="${tecnico.correo}">juan@correo.com</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <div class="mb-3">
+        <div class="mb-3">
+            <a href="/tecnicos/export/csv" class="btn btn-success">Exportar CSV</a>
+            <a href="/tecnicos/export/pdf" class="btn btn-danger">Exportar PDF</a>
+            <a href="/tecnicos/export/excel" class="btn btn-primary">Exportar Excel</a>
+        </div>        
+    </div>    
+</body>
+</html>
