@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <title>Reporte de Mantenimientos Programados vs. Realizados</title>
+    <!-- Conservamos exactamente el mismo estilo CSS -->
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            color: #333;
+            padding: 20px;
+        }
+        h1 {
+            color: #e67e22;
+            text-align: center;
+        }
+        form {
+            background-color: #fff;
+            padding: 15px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        form input[type="date"],
+        form select,
+        form button {
+            padding: 8px;
+            margin: 8px 5px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+        }
+        form button {
+            background-color: #e67e22;
+            color: #fff;
+            border: none;
+            cursor: pointer;
+        }
+        form button:hover {
+            background-color: #d35400;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background-color: #fff;
+            margin-top: 20px;
+        }
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ccc;
+        }
+        th {
+            background-color: #e67e22;
+            color: white;
+        }
+        tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+        tr:hover {
+            background-color: #ddd;
+        }
+        .export-buttons {
+            display: flex;
+            justify-content: space-evenly;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        .export-buttons a {
+            text-decoration: none;
+            color: white;
+            font-weight: bold;
+            padding: 10px 20px;
+            border-radius: 5px;
+            border: 1px solid #e67e22;
+            background-color: #e67e22;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+        }
+        .export-buttons a:hover {
+            background-color: #d35400;
+            transform: scale(1.05);
+        }
+    </style>
+</head>
+<body>
+    <h1>Mantenimientos Programados vs. Realizados</h1>
+
+    <!-- Formulario de filtros (similar al original pero con campos para este reporte) -->
+    <form th:action="@{/reportes/programados-vs-realizados}" method="get">
+        <label>Fecha Inicio:</label>
+        <input type="date" name="fechaInicio" th:value="${fechaInicio}"/>
+
+        <label>Fecha Fin:</label>
+        <input type="date" name="fechaFin" th:value="${fechaFin}"/>
+
+        <label>Tipo de Máquina:</label>
+        <select name="tipoMaquinariaId">
+            <option value="">-- Todos --</option>
+            <option th:each="tipo : ${tiposMaquinaria}" 
+                    th:value="${tipo.id}" 
+                    th:text="${tipo.nombre}"
+                    th:selected="${tipoMaquinariaId} == ${tipo.id}"></option>
+        </select>
+
+        <button type="submit">Filtrar</button>
+    </form>
+
+    <!-- Scripts para actualizar los enlaces de exportación (igual que el original) -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.querySelector('form');
+            
+            function updateExportLinks() {
+                const formData = new FormData(form);
+                const params = new URLSearchParams();
+                for (const [key, value] of formData.entries()) {
+                    if (value && value.trim() !== '') {
+                        params.append(key, value);
+                    }
+                }
+                document.querySelector('#export-csv-link').href = `/reportes/programados-vs-realizados/export/csv?${params.toString()}`;
+                document.querySelector('#export-excel-link').href = `/reportes/programados-vs-realizados/export/excel?${params.toString()}`;
+                document.querySelector('#export-pdf-link').href = `/reportes/programados-vs-realizados/export/pdf?${params.toString()}`;
+            }
+            form.addEventListener('change', updateExportLinks);
+            updateExportLinks();
+        });
+    </script>
+
+    <!-- Mensaje si no hay resultados -->
+    <p th:if="${resultados != null and #lists.isEmpty(resultados)}" style="text-align:center; font-weight: bold; color: #d35400;">
+        No se encontraron datos con los filtros seleccionados.
+    </p>
+
+    <!-- Tabla de resultados -->
+    <table th:if="${resultados != null}">
+        <thead>
+            <tr>
+                <th>Tipo</th>
+                <th>Máquina</th>
+                <th>Fecha Programada/Realizada</th>
+                <th>Técnico</th>
+                <th>Estado</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Mantenimientos Programados -->
+            <tr th:each="programado : ${programados}">
+                <td>Programado</td>
+                <td th:text="${programado.maquinaria.nombre}"></td>
+                <td th:text="${programado.fechaProgramada}"></td>
+                <td>--</td>
+                <td>Pendiente</td>
+            </tr>
+            <!-- Mantenimientos Realizados -->
+            <tr th:each="realizado : ${realizados}">
+                <td>Realizado</td>
+                <td th:text="${realizado.maquinaria.nombre}"></td>
+                <td th:text="${realizado.fecha}"></td>
+                <td th:text="${realizado.tecnico.nombre}"></td>
+                <td>Completado</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <!-- Gráfico comparativo -->
+    <canvas id="graficoComparativo" width="400" height="200" style="margin: 40px auto; display: block;"></canvas>
+
+    <!-- Script del gráfico -->
+    <script th:inline="javascript">
+        /*<![CDATA[*/
+        const data = {
+            labels: ['Programados', 'Realizados'],
+            datasets: [{
+                label: 'Cantidad',
+                data: [
+                    /*[[${programados != null ? programados.size() : 0}]]*/,
+                    /*[[${realizados != null ? realizados.size() : 0}]]*/
+                ],
+                backgroundColor: ['#36a2eb', '#4bc0c0']
+            }]
+        };
+        new Chart(document.getElementById('graficoComparativo'), {
+            type: 'bar',
+            data: data,
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: { stepSize: 1 }
+                    }
+                }
+            }
+        });
+        /*]]>*/
+    </script>
+
+    <!-- Botones de exportación (mismo estilo) -->
+    <div class="export-buttons">
+        <a id="export-csv-link" href="#">Exportar a CSV</a>
+        <a id="export-excel-link" href="#">Exportar a Excel</a>
+        <a id="export-pdf-link" href="#">Exportar a PDF</a>
+    </div>
+</body>
+</html>
