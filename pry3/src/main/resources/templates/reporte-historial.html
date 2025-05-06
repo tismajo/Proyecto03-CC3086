@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <title>Reporte de Historial de Mantenimientos</title>
+    <!-- Mantener el mismo estilo CSS -->
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            color: #333;
+            padding: 20px;
+        }
+
+        h1 {
+            color: #e67e22;
+            text-align: center;
+        }
+
+        form {
+            background-color: #fff;
+            padding: 15px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        form input[type="date"],
+        form select,
+        form button {
+            padding: 8px;
+            margin: 8px 5px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+        }
+
+        form button {
+            background-color: #e67e22;
+            color: #fff;
+            border: none;
+            cursor: pointer;
+        }
+
+        form button:hover {
+            background-color: #d35400;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background-color: #fff;
+            margin-top: 20px;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ccc;
+        }
+
+        th {
+            background-color: #e67e22;
+            color: white;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+
+        tr:hover {
+            background-color: #ddd;
+        }
+    </style>
+</head>
+<body>
+    <h1>Reporte de Historial de Mantenimientos</h1>
+
+    <form th:action="@{/reportes/historial/filtrar}" method="get">
+        <label>Fecha Inicio Solución:</label>
+        <input type="date" name="fechaInicio" th:value="${fechaInicio}"/>
+
+        <label>Fecha Fin Solución:</label>
+        <input type="date" name="fechaFin" th:value="${fechaFin}"/>
+
+        <label>Técnico:</label>
+        <select name="tecnicoId">
+            <option value="">-- Todos --</option>
+            <option th:each="tecnico : ${tecnicos}" 
+                    th:value="${tecnico.id}" 
+                    th:text="${tecnico.nombre}"
+                    th:selected="${tecnicoId} == ${tecnico.id}"></option>
+        </select>
+
+        <label>Tipo Mantenimiento:</label>
+        <select name="tipoMantenimientoId">
+            <option value="">-- Todos --</option>
+            <option th:each="tipo : ${tiposMantenimiento}" 
+                    th:value="${tipo.id}" 
+                    th:text="${tipo.nombre}"
+                    th:selected="${tipoMantenimientoId} == ${tipo.id}"></option>
+        </select>
+
+        <label>Estado Solución:</label>
+        <select name="estadoSolucion">
+            <option value="">-- Todos --</option>
+            <option value="Completado" th:selected="${estadoSolucion} == 'Completado'">Completado</option>
+            <option value="Parcial" th:selected="${estadoSolucion} == 'Parcial'">Parcial</option>
+            <option value="Fallido" th:selected="${estadoSolucion} == 'Fallido'">Fallido</option>
+        </select>
+
+        <button type="submit">Filtrar</button>
+    </form>
+
+    <!-- Scripts para exportación (similar al original pero apuntando a nuevos endpoints) -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const form = document.querySelector('form');
+            
+            function updateExportLinks() {
+                const formData = new FormData(form);
+                const params = new URLSearchParams();
+
+                for (const [key, value] of formData.entries()) {
+                    if (value && value.trim() !== '') {
+                        params.append(key, value);
+                    }
+                }
+
+                // Actualizar todos los enlaces de exportación
+                document.querySelector('#export-csv-link').href = `/reportes/historial/export/csv?${params.toString()}`;
+                document.querySelector('#export-excel-link').href = `/reportes/historial/export/excel?${params.toString()}`;
+                document.querySelector('#export-pdf-link').href = `/reportes/historial/export/pdf?${params.toString()}`;
+            }
+
+            form.addEventListener('change', updateExportLinks);
+            form.addEventListener('input', updateExportLinks);
+            updateExportLinks();
+        });
+    </script>
+
+    <!-- Mensaje si no hay resultados -->
+    <p th:if="${historiales != null and #lists.isEmpty(historiales)}" 
+       style="text-align:center; font-weight: bold; color: #d35400;">
+        No se encontraron registros que coincidan con los criterios de búsqueda.
+    </p>
+
+    <!-- Tabla de resultados -->
+    <table th:if="${historiales != null}">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Falla</th>
+                <th>Técnico</th>
+                <th>Fecha Solución</th>
+                <th>Tipo Mantenimiento</th>
+                <th>Solución</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr th:each="historial : ${historiales}">
+                <td th:text="${historial.id}"></td>
+                <td th:text="${historial.falla.descripcion}"></td>
+                <td th:text="${historial.mantenimiento.tecnico.nombre}"></td>
+                <td th:text="${historial.fechaSolucion}"></td>
+                <td th:text="${historial.mantenimiento.tipoMantenimiento.nombre}"></td>
+                <td th:text="${historial.solucion}"></td>
+            </tr>
+        </tbody>
+    </table>
+
+    <!-- Gráfico de tipos de mantenimiento -->
+    <canvas id="graficoTiposMantenimiento" width="400" height="200" style="margin: 40px auto; display: block;"></canvas>
+
+    <!-- Botones de exportación -->
+    <div class="export-buttons">
+        <a id="export-csv-link" href="#">Exportar a CSV</a>
+        <a id="export-excel-link" href="#">Exportar a Excel</a>
+        <a id="export-pdf-link" href="#">Exportar PDF</a>
+    </div>
+
+    <!-- Script para el gráfico -->
+    <script th:inline="javascript">
+        /*<![CDATA[*/
+            // Convertir las listas de Thymeleaf a JSON
+            const nombres = /*[[${tiposMantenimientoNombres}]]*/ [];
+            const conteos = /*[[${conteoTiposMantenimiento}]]*/ [];
+    
+            const data = {
+                labels: nombres,
+                datasets: [{
+                    label: 'Distribución de Tipos de Mantenimiento',
+                    data: conteos,
+                    backgroundColor: ['#e74c3c', '#f39c12', '#2ecc71', '#3498db']
+                }]
+            };
+    
+            new Chart(document.getElementById('graficoTiposMantenimiento'), {
+                type: 'pie',
+                data: data,
+                options: { responsive: true }
+            });
+        /*]]>*/
+    </script>
+
+</body>
+</html>
